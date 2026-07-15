@@ -322,15 +322,26 @@
   .wc-live.under{color:#c2410c;}
   .wc-live.over{color:#dc2626;}
 
+  .print-answer{display:none;}
+
   /* ===== Print (PDF export) ===== */
   @media print{
     body{background:#fff;}
     .topbar, .mode-switch, .page-switch, .wc-banner, .exam-sticky,
     .exam-intro, .start-btn, footer, .fullscreen-btn, #browseMode,
-    .exam-nav, .accent-bar, .wc-live{display:none !important;}
-    .exam-answer{border:none; padding:0; min-height:0; resize:none;}
+    .exam-nav, .accent-bar, .wc-live, .exam-answer{display:none !important;}
+    .print-answer{
+      display:block !important;
+      white-space:pre-wrap; word-wrap:break-word; overflow-wrap:break-word;
+      font-size:12pt; line-height:1.7; color:#000;
+      border-top:1px solid #ddd; margin-top:8px; padding-top:8px;
+    }
     .exam-page{display:block !important;}
-    .exam-task{border:1px solid #ccc; break-inside:avoid; page-break-inside:avoid; margin-bottom:16px;}
+    .exam-task{
+      border:1px solid #ccc; margin-bottom:16px;
+      break-inside:auto; page-break-inside:auto;
+    }
+    .exam-task-head{break-after:avoid; page-break-after:avoid;}
     #printHeader{display:block !important;}
   }
   #printHeader{display:none;}
@@ -845,6 +856,7 @@ function taskBlockHtml(n, wcLabel, subjectHtml, answerId){
       </div>
       <div class="exam-subject">${subjectHtml}</div>
       <textarea class="exam-answer" id="${answerId}" placeholder="Rédigez votre réponse ici…"></textarea>
+      <div class="print-answer" id="print_${answerId}"></div>
       <div class="wc-live under" id="wc_${answerId}">0 mot</div>
     </div>
   </div>`;
@@ -1011,6 +1023,13 @@ function finishExam(){
     `Mots : T1 ${countWords(document.getElementById('ans1').value)} · ` +
     `T2 ${countWords(document.getElementById('ans2').value)} · ` +
     `T3 ${countWords(document.getElementById('ans3').value)}`;
+
+  // Copy each answer into a printable div: textareas do NOT expand when printed,
+  // so their overflowing content would be silently cut off.
+  ['ans1','ans2','ans3'].forEach(id => {
+    const val = document.getElementById(id).value || '';
+    document.getElementById('print_' + id).textContent = val.trim() ? val : '(non rédigé)';
+  });
 
   setTimeout(() => window.print(), 100);
 }
